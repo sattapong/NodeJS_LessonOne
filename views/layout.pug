@@ -20,16 +20,34 @@ body
       li.nav-item
         a.nav-link(href='/articles/add') Add Article
       li.nav-item
-        a.nav-link(href='#') Pricing
-      li.nav-item.dropdown
-        a#navbarDropdownMenuLink.nav-link.dropdown-toggle(href='#', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-          | Dropdown link
-        .dropdown-menu(aria-labelledby='navbarDropdownMenuLink')
-          a.dropdown-item(href='#') Action
-          a.dropdown-item(href='#') Another action
-          a.dropdown-item(href='#') Something else here
+        a.nav-link(href='/test_if_else') Test If Else
+
+    ul.navbar-nav.ml-auto  
+      if user
+        li.nav-item.dropdown
+         a#navbarDropdownMenuLink.nav-link.dropdown-toggle(href='#', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')=user.name
+         .dropdown-menu(aria-labelledby='navbarDropdownMenuLink')
+             //a.dropdown-item(href='#') Action
+             a.dropdown-item(href='/users/logout') Logout
+   
+      else
+         li.nav-item
+          a.nav-link(href='/users/register') Register
+         li.nav-item.mr-auto
+          a.nav-link(href='/users/login') Sign in
+        
+      
+     
+     
+       
+            
+     
 
 .container
+ != messages('message', locals)
+ if errors
+        each error, i in errors
+          div(class="alert alert-danger") #{error.msg}
  block content
     br
     hr

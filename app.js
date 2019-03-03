@@ -2,8 +2,13 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const expressValidator = require("express-validator");
+const flash = require("connect-flash");
+const session = require("express-session");
+const config = require('./config/database');
+const passport = require('passport');
 
-mongoose.connect("mongodb://localhost/lessonone");
+mongoose.connect(config.database);
 let db = mongoose.connection;
 
 //Bring in Models
@@ -33,6 +38,59 @@ app.use(bodyParser.json());
 // Set Public Folder
 app.use(express.static(path.join(__dirname, "public")));
 
+//Express Session Middleware
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: true,
+    saveUninitialized: true
+  })
+);
+
+//Express Messages Middleware
+app.use(require("connect-flash")());
+app.use(function(req, res, next) {
+  res.locals.messages = require("express-messages")(req, res);
+  next();
+});
+
+// Begin Express Validator Middleware
+app.use(
+  expressValidator({
+    errorFormatter: function(params, msg, value) {
+      var namespace = param.split("."),
+        root = namespace.shift(),
+        formParam = root;
+
+      while (namespace.length) {
+        formParam += "[" + namespace.shift() + "]";
+      }
+      return {
+        param: formParam,
+        msg: msg,
+        value: value
+      };
+    }
+  })
+);
+
+// End Express Validator Middleware
+
+
+// Passport Config
+require('./config/passport')(passport);
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+app.get('*',function(req,res,next){
+res.locals.user = req.user || null;
+next();
+});
+
+ 
+
 // Begin Home Route **************************************************************************************
 
 app.get("/", function(req, res) {
@@ -41,95 +99,28 @@ app.get("/", function(req, res) {
       console.log(err);
     } else {
       res.render("index", {
-        title: "Hello",
+        title: "Article",
         articles: articles
       });
     }
   });
 });
+
+// Begin Test **************************************************************************************
+
+app.get("/test_if_else", function(req, res) {
+res.render("test_if_else",{
  
-// Begin Single Article **************************************************************************************
-
-app.get("/article/:idx/", function(req, res) {
-  ModelArticle.findById(req.params.idx, function(err, articlex) {
-    res.render("article", {
-      article: articlex
-    });
-  });
+});
 });
 
-// Begin Edit Single Article **************************************************************************************
 
-app.get("/article/edit/:idx", function(req, res) {
-  ModelArticle.findById(req.params.idx, function(err, articlex) {
-    res.render("edit_article", {
-      title:"Edit "+articlex.title,
-      article:articlex
-    });
-  });
-});
+let articles = require('./routes/articles');
+app.use('/articles',articles);
 
-// Begin Add Route **************************************************************************************
-app.get("/articles/add", function(req, res) {
-  res.render("add_article", {
-    title: "Add Article"
-  });
-});
+let users = require('./routes/users');
+app.use('/users',users);
 
-// Begin Add Submit POST Route **************************************************************************************
-
-app.post("/articles/add", function(req, res) {
-  let article = new ModelArticle();
-  article.title = req.body.title;
-  article.author = req.body.author;
-  article.body = req.body.body;
-
-  article.save(function(err) {
-    if (err) {
-      console.log(err);
-      return;
-    } else {
-      res.redirect("/");
-    }
-  });
-});
-
-// Begin Update Submit POST Route **************************************************************************************
-
-app.post("/articles/edit/:id", function(req, res) {
-    let article = {};
-    article.title = req.body.title;
-    article.author = req.body.author;
-    article.body = req.body.body;
-  
-let query = {_id:req.params.id}
-
-ModelArticle.update(query,article,function(err) {
-      if (err) {
-        console.log(err);
-        return;
-      } else {
-        res.redirect("/");
-      }
-    });
-  });
- 
-
-// Begin Delete Submit POST Route **************************************************************************************
-
-app.delete('/article/:id',function(req,res){
-
-let query = {_id:req.params.id}
-
-ModelArticle.remove(query,function(err){
-if(err){
-console.log(err);
-}else{
-res.send("Success");
-}
-});
-
-});
 
 // start server
 app.listen(3000, function() {

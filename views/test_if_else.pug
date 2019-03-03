@@ -1,0 +1,31 @@
+doctype html
+html
+    head
+    link(rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css")
+    script(src="/bower_components/bootstrap/dist/js/bootstrap.js")
+    body
+        .container
+         h1 For/Each Loop
+         - const name = ['tiger','ton','wirawut'];
+         each n,i in name
+            p=n + " ตำแหน่งที่ " + i
+
+            
+        .container
+         h1 My Web Application
+         - let user = { name:'tiger',loggedIn:true,lastLogin:9 }
+         if user.loggedIn
+            p
+                | Welcome Back.
+                <br>
+                strong #{ user.name }
+         else if user.lastLogin < 10
+            p Your Last login was #{ user.lastLogin } minutes ago
+            p
+                a(href="/login") Log in Again
+         else
+                a(href="/login") Log In
+
+ 
+
+
